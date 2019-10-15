@@ -1,0 +1,31 @@
+<!--
+/**
+ * Copyright 2018 © Roma Technology Ltd. All rights reserved.
+ * See COPYING.txt for license details.
+ **/
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+
+  <table name="rtech_quote" resource="default" engine="innodb" comment="Saved Quotes">
+    <column xsi:type="int" name="quote_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Magento Quote ID"/>
+    <column xsi:type="int" name="customer_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Magento Customer ID"/>
+    <column xsi:type="int" name="line_items" padding="5" unsigned="true" nullable="false" identity="false" comment="Quote Line Items"/>
+    <column xsi:type="float" name="grand_total" precision="20" scale="4" nullable="false" comment="Grand Total"/>
+    <column xsi:type="float" name="subtotal" precision="20" scale="4" nullable="false" comment="Subtotal"/>
+    <column xsi:type="float" name="shipping_amount" precision="20" scale="4" nullable="false" comment="Shipping Amount"/>
+    <column xsi:type="float" name="tax_amount" precision="20" scale="4" nullable="false" comment="Tax Amount"/>
+    <column xsi:type="varchar" name="estimate_id" nullable="true" length="32" comment="Zoho Estimate ID"/>
+    <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Creation Time"/>
+    <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="true" default="CURRENT_TIMESTAMP" comment="Updated Time"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="quote_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="RTECH_QUOTE_CUSTOMER_ENTITY_ENTITY_ID"
+                table="rtech_quote" column="customer_id" referenceTable="customer_entity"
+                referenceColumn="entity_id" onDelete="CASCADE"/>
+    <constraint xsi:type="foreign" referenceId="RTECH_QUOTE_QUOTE_ENTITY_ID"
+                table="rtech_quote" column="quote_id" referenceTable="quote"
+                referenceColumn="entity_id" onDelete="CASCADE"/>
+  </table>
+
+</schema>
