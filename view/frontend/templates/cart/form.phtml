@@ -52,24 +52,14 @@ $loggedIn = $this->helper(RTech\Quote\Helper\LoggedIn::class)->isLoggedIn();
                 <span><?= $block->escapeHtml(__('Continue Shopping')) ?></span>
             </a>
         <?php endif; ?>
-        <button type="button"
-                name="update_cart_action"
-                data-cart-empty=""
-                value="empty_cart"
-                title="<?= $block->escapeHtml(__('Clear Cart')) ?>"
-                class="action clear"
-                id="empty_cart_button">
-            <span><?= $block->escapeHtml(__('Clear Cart')) ?></span>
-        </button>
-        <button type="submit"
-                name="update_cart_action"
-                data-cart-item-update=""
-                value="update_qty"
-                title="<?= $block->escapeHtml(__('Update Cart')) ?>"
-                class="action update"
-                id="update_cart_button">
-            <span><?= $block->escapeHtml(__('Update Cart')) ?></span>
-        </button>
+      <button type="submit"
+              name="update_cart_action"
+              data-cart-item-update=""
+              value="update_qty"
+              title="<?= $block->escapeHtml(__('Update Cart')) ?>"
+              class="action update">
+        <span><?= $block->escapeHtml(__('Update Cart')) ?></span>
+      </button>
         <?php if ($loggedIn) :?>
           <button type="button"
                   name="save_cart_action"
@@ -87,14 +77,13 @@ $loggedIn = $this->helper(RTech\Quote\Helper\LoggedIn::class)->isLoggedIn();
 <?= $block->getChildHtml('checkout.cart.order.actions') ?>
 <?= $block->getChildHtml('shopping.cart.table.after') ?>
 
+
 <script>
 require([
   'jquery',
   'Magento_Ui/js/modal/confirm',
   'Magento_Customer/js/customer-data'
-], function($, confirmation, customerData) {
-
-  $('#save_cart_button').click(function() {
+], function($, confirmation, customerData) {  $('#save_cart_button').click(function() {
     var cartData = customerData.get('cart-data')();
     if (!cartData.shippingMethodCode) {
       customerData.set('messages', {
