@@ -57,7 +57,8 @@ $loggedIn = $this->helper(RTech\Quote\Helper\LoggedIn::class)->isLoggedIn();
               data-cart-item-update=""
               value="update_qty"
               title="<?= $block->escapeHtml(__('Update Cart')) ?>"
-              class="action update">
+              class="action update"
+              id="update_cart_button">
         <span><?= $block->escapeHtml(__('Update Cart')) ?></span>
       </button>
         <?php if ($loggedIn) :?>
@@ -67,7 +68,8 @@ $loggedIn = $this->helper(RTech\Quote\Helper\LoggedIn::class)->isLoggedIn();
                   value="save_cart"
                   title="<?= $block->escapeHtml(__('Save')) ?>"
                   class="action clear"
-                  id="save_cart_button">
+                  id="save_cart_button"
+                  disabled >
               <span><?= $block->escapeHtml(__('Save')) ?></span>
           </button>
         <?php endif; ?>
@@ -82,8 +84,13 @@ $loggedIn = $this->helper(RTech\Quote\Helper\LoggedIn::class)->isLoggedIn();
 require([
   'jquery',
   'Magento_Ui/js/modal/confirm',
-  'Magento_Customer/js/customer-data'
-], function($, confirmation, customerData) {  $('#save_cart_button').click(function() {
+  'Magento_Customer/js/customer-data',
+  'domReady!'
+], function($, confirmation, customerData) {
+  $('#save_cart_button').prop('disabled', false);
+
+  $('#save_cart_button').click(function() {
+    $('#save_cart_button').prop('disabled', true);
     var cartData = customerData.get('cart-data')();
     if (!cartData.shippingMethodCode) {
       customerData.set('messages', {
@@ -113,7 +120,9 @@ require([
               return true;
             });
           },
-          cancel: function(){}
+          cancel: function(){
+            $('#save_cart_button').prop('disabled', false);
+          }
         }
       });
     }

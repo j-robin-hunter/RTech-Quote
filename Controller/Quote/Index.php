@@ -47,29 +47,33 @@ class Index extends \Magento\Framework\App\Action\Action {
       $this->_quoteRepository->delete($cart);
     }
 
-    $savedQuote = $this->_savedQuoteRepository->getById($quoteid);
-    $savedPrice = $savedQuote->getSubtotal();
-    $savedDate = $savedQuote->getUpdatedAt();
+    try {
+      $savedQuote = $this->_savedQuoteRepository->getById($quoteid);
+      $savedPrice = $savedQuote->getSubtotal();
+      $savedDate = $savedQuote->getUpdatedAt();
 
-    $cart = $this->_quoteRepository->get($quoteid);
-    $cartPrice = $cart->getSubtotalWithDiscount();
+      $cart = $this->_quoteRepository->get($quoteid);
+      $cartPrice = $cart->getSubtotalWithDiscount();
 
-    if ($savedPrice < $cartPrice) {
-      $this->_messageManager->addNotice(__('Quote #%1 has been restored. We are sorry, but recent price changes have increased you order subtotal by %2',
-       $quoteid, $this->getPriceDifference($cart, $savedPrice)));
-    } elseif ($savedPrice > $cartPrice) {
-      $this->_messageManager->addSuccess(__('Quote #%1 has been updated with recent lower prices, saving you %2 off your subtotal',
+      if ($savedPrice < $cartPrice) {
+        $this->_messageManager->addNotice(__('Quote #%1 has been restored. We are sorry, but recent price changes have increased you order subtotal by %2',
         $quoteid, $this->getPriceDifference($cart, $savedPrice)));
-    } else {
-      if ($cartIdId != $quoteid) {
-        $this->_messageManager->addSuccess(__('Quote #%1 has been restored', $quoteid));
+      } elseif ($savedPrice > $cartPrice) {
+        $this->_messageManager->addSuccess(__('Quote #%1 has been updated with recent lower prices, saving you %2 off your subtotal',
+          $quoteid, $this->getPriceDifference($cart, $savedPrice)));
+      } else {
+        if ($cartIdId != $quoteid) {
+          $this->_messageManager->addSuccess(__('Quote #%1 has been restored', $quoteid));
+        }
       }
-    }
 
-    $cart->setIsActive(true);
-    $cart->setTriggerRecollect(true);
-    $this->_quoteRepository->save($cart);
-    $this->_checkoutSession->replaceQuote($cart);
+      $cart->setIsActive(true);
+      $cart->setTriggerRecollect(true);
+      $this->_quoteRepository->save($cart);
+      $this->_checkoutSession->replaceQuote($cart);
+    } catch (\Exception $e) {
+      $this->_messageManager->addError(__('An unexpected error has occured while restoring quote #%1', $quoteid));
+    }
 
     $resultPage = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
     $resultPage->setPath('checkout/cart');
