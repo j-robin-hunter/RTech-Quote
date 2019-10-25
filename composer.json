@@ -1,6 +1,6 @@
 {
   "name": "rtech/quote",
-  "description": "Energy model",
+  "description": "Allows cart to be saved as a quote",
   "type": "magento2-module",
   "license": "MIT",
   "authors": [
