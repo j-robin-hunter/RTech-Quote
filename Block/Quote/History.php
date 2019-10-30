@@ -6,7 +6,6 @@
 namespace RTech\Quote\Block\Quote;
 
 use \Magento\Framework\Api\SortOrder;
-use \RTech\Energy\Model\ResourceModel\Model\CollectionFactoryInterface;
 
 class History extends \Magento\Framework\View\Element\Template {
 
