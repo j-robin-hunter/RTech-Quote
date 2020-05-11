@@ -43,7 +43,6 @@ class Save extends \Magento\Framework\App\Action\Action {
     $this->_logger = $logger;
   }
 
-
   public function execute() {
     $postData = $this->getRequest()->getPostValue();
     $quote = $this->_checkoutSession->getQuote();

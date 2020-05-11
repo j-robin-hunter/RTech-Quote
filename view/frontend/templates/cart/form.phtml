@@ -52,25 +52,22 @@ $loggedIn = $this->helper(RTech\Quote\Helper\LoggedIn::class)->isLoggedIn();
                 <span><?= $block->escapeHtml(__('Continue Shopping')) ?></span>
             </a>
         <?php endif; ?>
-      <button type="submit"
-              name="update_cart_action"
-              data-cart-item-update=""
-              value="update_qty"
-              title="<?= $block->escapeHtml(__('Update Cart')) ?>"
-              class="action update"
-              id="update_cart_button">
-        <span><?= $block->escapeHtml(__('Update Cart')) ?></span>
-      </button>
+        <button type="submit"
+                name="update_cart_action"
+                data-cart-item-update=""
+                value="update_qty"
+                title="<?= $block->escapeHtml(__('Update Cart')) ?>"
+                class="action update"
+                id="update_cart_button">
+          <span><?= $block->escapeHtml(__('Update Cart')) ?></span>
+        </button>
         <?php if ($loggedIn) :?>
           <button type="button"
-                  name="save_cart_action"
-                  data-cart-save=""
-                  value="save_cart"
-                  title="<?= $block->escapeHtml(__('Save')) ?>"
-                  class="action clear"
-                  id="save_cart_button"
-                  disabled >
-              <span><?= $block->escapeHtml(__('Save')) ?></span>
+              class="action"
+              id="save_cart_button"
+              style="margin-left: 10px;"
+              disabled >
+            <span><?= $block->escapeHtml(__('Save')) ?></span>
           </button>
         <?php endif; ?>
         <input type="hidden" value="" id="update_cart_action_container" data-cart-item-update=""/>
@@ -78,7 +75,6 @@ $loggedIn = $this->helper(RTech\Quote\Helper\LoggedIn::class)->isLoggedIn();
 </form>
 <?= $block->getChildHtml('checkout.cart.order.actions') ?>
 <?= $block->getChildHtml('shopping.cart.table.after') ?>
-
 
 <script>
 require([
@@ -114,6 +110,8 @@ require([
               dataType: 'json'
             }).done(function (result) {
               if (result.status == 'ok') {
+                customerData.set('cart', {});
+                customerData.set('cart-data', {});
                 window.location.href = "<?= $block->getBaseUrl() ?>quote/quote/success/id/" + result.id;
               }
               clearMessage();
@@ -129,6 +127,7 @@ require([
 
     function clearMessage() {
       setTimeout(function() {
+        $('#save_cart_button').prop('disabled', false);
         customerData.set('messages', {
           messages: []
         });
