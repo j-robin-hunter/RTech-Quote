@@ -1,0 +1,13 @@
+<?php
+/**
+* Copyright © 2019 Roma Technology Limited. All rights reserved.
+* See COPYING.txt for license details.
+*/
+$information = $block->getInformation();
+?>
+<?php if ($information): ?>
+    <?php $methodCode = $block->escapeHtml($block->getMethodCode());?>
+    <div class="items <?= /* @noEscape */ $methodCode ?> information agreement checkout-agreement-item-content" id="payment_form_<?= /* @noEscape */ $methodCode ?>" style="display: none;">
+        <?= /* @noEscape */ nl2br($block->escapeHtml($information)) ?>
+    </div>
+<?php endif; ?>

@@ -7,10 +7,8 @@
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
   <body>
-    <referenceBlock name='checkout.cart.form'>
-      <action method='setTemplate'>
-        <argument name='template' xsi:type='string'>RTech_Quote::cart/form.phtml</argument>
-      </action>
-    </referenceBlock>
+    <referenceContainer name="checkout.cart.methods">
+      <block class="Magento\Framework\View\Element\Template" name="checkout.cart.content.block" after="-" template="RTech_Quote::cart/button.phtml"/>
+    </referenceContainer>
   </body>
 </page>

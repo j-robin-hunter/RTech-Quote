@@ -1,0 +1,22 @@
+<?php
+/**
+* Copyright © 2019 Roma Technology Limited. All rights reserved.
+* See COPYING.txt for license details.
+*/
+?>
+<?php
+$loggedIn = $this->helper(RTech\Quote\Helper\LoggedIn::class)->isLoggedIn();
+?>
+<?php if ($loggedIn) :?>
+  <div class="checkout methods items checkout-methods-items">
+    <button id="saveasquote"
+        type="submit"
+        name="save_as_quote_action"
+        value="save_as_quote"
+        title="<?php echo $block->escapeHtml(__('Save as Estimate')); ?>"
+        class="action primary checkout"
+        data-mage-init='{"saveQuoteActions": {"buttonSelector" : "#saveasquote"} }'>
+      <span><?php echo $block->escapeHtml(__('Save as Estimate')); ?></span>
+    </button>
+  </div>
+<?php endif; ?>

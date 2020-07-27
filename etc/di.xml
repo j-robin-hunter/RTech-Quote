@@ -7,6 +7,16 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
-  <preference for="RTech\Quote\Api\QuoteRepositoryInterface" type="RTech\Quote\Model\QuoteRepository" />
+  <type name="Magento\Checkout\Model\CompositeConfigProvider">
+    <arguments>
+      <argument name="configProviders" xsi:type="array">
+        <item name="offline_payment_information_config_provider" xsi:type="object">RTech\Quote\Model\InformationConfigProvider</item>
+      </argument>
+    </arguments>
+  </type>
 
+  <type name="Magento\Sales\Model\Order\Email\Sender\OrderSender">
+      <plugin name="disableEstimateEmailPlugin" sortOrder="1" type="RTech\Quote\Plugin\OrderSenderPlugin"/>
+  </type>
+  
 </config>

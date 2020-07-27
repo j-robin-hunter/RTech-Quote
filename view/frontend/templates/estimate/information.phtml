@@ -1,0 +1,12 @@
+<?php
+/**
+* Copyright © 2019 Roma Technology Limited. All rights reserved.
+* See COPYING.txt for license details.
+*/
+?>
+<dl class="payment-method">
+    <dt class="title"><?= $block->escapeHtml($block->getMethod()->getTitle()) ?></dt>
+<?php if ($block->getInformation()): ?>
+    <dd class="content"><?= /* @noEscape */ nl2br($block->escapeHtml($block->getInformation())) ?></dd>
+<?php endif; ?>
+</dl>

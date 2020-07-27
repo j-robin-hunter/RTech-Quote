@@ -5,79 +5,93 @@
  */
 namespace RTech\Quote\Controller\Quote;
 
-use RTech\Quote\Api\Data\QuoteInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Api\SortOrder;
 
 class Save extends \Magento\Framework\App\Action\Action {
 
-  protected $_storeManager;
-  protected $_customerSession;
   protected $_checkoutSession;
-  protected $_quoteRepository;
-  protected $_savedQuoteFactory;
-  protected $_savedQuoteRepository;
+  protected $_customerRepository;
+  protected $_addressFactory;
+  protected $_quoteManagement;
   protected $_messageManager;
   protected $_logger;
 
   public function __construct(
     \Magento\Framework\App\Action\Context $context,
-    \Magento\Store\Model\StoreManagerInterface $storeManager,
-    \Magento\Customer\Model\Session $customerSession,
     \Magento\Checkout\Model\Session $checkoutSession,
-    \Magento\Quote\Model\QuoteRepository $quoteRepository,
-    \RTech\Quote\Model\QuoteFactory $savedQuoteFactory,
-    \RTech\Quote\Model\QuoteRepository $savedQuoteRepository,
+    \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
+    \Magento\Customer\Model\AddressFactory $addressFactory,
+    \Magento\Quote\Model\QuoteManagement $quoteManagement,
     \Magento\Framework\Message\ManagerInterface $messageManager,
     \Psr\Log\LoggerInterface $logger
   ) {
     parent::__construct($context);
-    $this->_storeManager = $storeManager;
-    $this->_customerSession = $customerSession;
     $this->_checkoutSession = $checkoutSession;
-    $this->_quoteRepository = $quoteRepository;
-    $this->_savedQuoteFactory = $savedQuoteFactory;
-    $this->_savedQuoteRepository = $savedQuoteRepository;
+    $this->_customerRepository = $customerRepository;
+    $this->_addressFactory = $addressFactory;
+    $this->_quoteManagement = $quoteManagement;
     $this->_messageManager = $messageManager;
     $this->_logger = $logger;
   }
 
   public function execute() {
-    $postData = $this->getRequest()->getPostValue();
-    $quote = $this->_checkoutSession->getQuote();
-    $this->_quoteRepository->save($quote);
+    $resultPage = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
 
-    if ($this->_customerSession->isLoggedIn()) {
-      $result = 'ok';
-      try {
-        $savedQuote = $this->_savedQuoteFactory->create();
-        $savedQuote->setData([
-          QuoteInterface::QUOTE_ID => $quote->getId(),
-          QuoteInterface::CUSTOMER_ID => $this->_customerSession->getId(),
-          QuoteInterface::LINE_ITEMS => count($postData['items']),
-          QuoteInterface::GRAND_TOTAL => $postData['subtotal_with_discount'] + $postData['shipping_amount'] + $postData['tax_amount'],
-          QuoteInterface::SUBTOTAL => $postData['subtotal_with_discount'],
-          QuoteInterface::SHIPPING_AMOUNT => $postData['shipping_amount'],
-          QuoteInterface::TAX_AMOUNT => $postData['tax_amount'],
-          QuoteInterface::UPDATED_AT => date_create('now')->format('Y-m-d H:i:s')
-        ]);
-        $this->_savedQuoteRepository->save($savedQuote);
-        $this->_eventManager->dispatch('saved_quote_saved_after', ['quote' => $quote]);
+    try {
+      $params = $this->getRequest()->getParams();
+      $quote = $this->_checkoutSession->getQuote();
 
-        $this->_checkoutSession->clearQuote();
-        $quote->setIsActive(0);
-        $this->_quoteRepository->save($quote);
+      $customer = $this->_customerRepository->getById($quote->getCustomerId());
 
-      } catch (\Exception $ex) {
-        $result = 'error: ' . $ex->getMessage();
-        $this->_messageManager->addError(__('Unexpected error: %1 ', $ex->getMessage()));
+      $addressData = [
+        'firstname' => $customer->getFirstname(),
+        'lastname' => $customer->getLastname(),
+        'street' => __('Street not provided'),
+        'city' => __('City not provided'),
+        'region' => $params['region'],
+        'region_id' => $params['regionId'],
+        'postcode' => $params['postcode'],
+        'telephone' => __(' '),
+        'country_id' => $params['countryId']
+      ];
 
-      }
-    } else {
-      $result = 'error: ' . __('Unable to save as your login session has expired');
+      $quote->getShippingAddress()->addData($addressData);
+
+      $billingAddressId = $customer->getDefaultBilling();
+      $billingAddress = $this->_addressFactory->create()->load($billingAddressId);
+      $addressData['street'] = $billingAddress->getStreet();
+      $addressData['city'] = $billingAddress->getCity();
+      $addressData['region'] = $billingAddress->getRegion();
+      $addressData['region_id'] = $billingAddress->getRegionId();
+      $addressData['postcode'] = $billingAddress->getPostcode();
+      $addressData['telephone'] = $billingAddress->getTelephone();
+      $addressData['country_id'] = $billingAddress->getCountryId();
+
+      $quote->getBillingAddress()->addData($addressData);
+
+      $quote->getShippingAddress()->setCollectShippingRates(true)->collectShippingRates()->setShippingMethod($params['shippingMethod']);
+      $quote->setPaymentMethod('estimate');
+      $quote->setInventoryProcessed(false);
+      $quote->save();
+
+      $quote->getPayment()->importData(['method' => 'estimate']);
+      $quote->collectTotals()->save();
+
+      $order = $this->_quoteManagement->submit($quote);
+      $order-> addCommentToStatusHistory(
+        __('While we make every effort to maintain our pricing and unless otherwise stated, this self generated estimate is only valid at this time.'),
+        false, 
+        true);
+      $order->save();
+      $this->_checkoutSession->clearQuote();
+      $quote->setIsActive(0);
+      $resultPage->setPath('sales/order/view', ['order_id' => $order->getEntityId()]);
+    } catch (\Exception $e) {
+      $this->_messageManager->addError(__('Unexpected error creating estimate: %1', $e->getMessage()));
+      $resultPage->setPath('customer/account');
     }
-    $resultPage = $this->resultFactory->create(ResultFactory::TYPE_JSON);
-    return $resultPage->setData(['status' => $result, 'id' => $quote->getId()]);
+    return $resultPage;
   }
 }

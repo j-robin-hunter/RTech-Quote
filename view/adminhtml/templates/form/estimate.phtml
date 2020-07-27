@@ -1,0 +1,11 @@
+<?php
+/**
+* Copyright © 2019 Roma Technology Limited. All rights reserved.
+* See COPYING.txt for license details.
+*/
+$code = $block->escapeHtml($block->getMethodCode());
+?>
+<fieldset class="admin__fieldset payment-method" id="payment_form_<?= /* @noEscape */ $code ?>" style="display:none">
+  <br>
+  <p><?= /* @noEscape */   nl2br($block->escapeHtml($block->getInstructions())) ?></p>
+</fieldset>
